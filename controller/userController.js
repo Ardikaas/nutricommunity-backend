@@ -1,9 +1,16 @@
 const User = require("../model/userModel.js");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
+const createToken = (_id) => {
+  return jwt.sign({ _id }, process.env.TOKENPASS, { expiresIn: "30d" });
+};
 
 const UserController = {
   getAllUsers,
   getUserById,
   createUser,
+  updateUser,
   deleteUser,
   loginUser,
   logoutUser,
@@ -20,7 +27,12 @@ async function getAllUsers(req, res) {
       data: users,
     });
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    res.status(500).json({
+      status: {
+        code: 500,
+        message: error.message,
+      },
+    });
   }
 }
 
@@ -35,22 +47,18 @@ async function getUserById(req, res) {
       data: user,
     });
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    res.status(500).json({
+      status: {
+        code: 500,
+        message: error.message,
+      },
+    });
   }
 }
 
 async function createUser(req, res) {
   try {
-    const {
-      username,
-      password,
-      email,
-      firstName,
-      lastName,
-      birthDate,
-      avatar,
-      role,
-    } = req.body;
+    const { username, password, email, avatar, role } = req.body;
 
     const existingUser = await User.findOne({ username });
 
@@ -69,9 +77,6 @@ async function createUser(req, res) {
       username,
       password: hashedPassword,
       email,
-      firstName,
-      lastName,
-      birthDate,
       avatar,
       role,
     });
@@ -81,12 +86,78 @@ async function createUser(req, res) {
     res.status(200).json({
       status: {
         code: 200,
-        message: "Success",
+        message: "User created successfully",
       },
       data: user,
     });
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    res.status(500).json({
+      status: {
+        code: 500,
+        message: error.message,
+      },
+    });
+  }
+}
+
+async function updateUser(req, res) {
+  try {
+    const { id } = req.params;
+    const { username, email, avatar, role, password } = req.body;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        status: {
+          code: 404,
+          message: "User not found",
+        },
+      });
+    }
+
+    if (username && username !== user.username) {
+      const existingUser = await User.findOne({ username });
+      if (existingUser) {
+        return res.status(400).json({
+          status: {
+            code: 400,
+            message: "Username already exists",
+          },
+        });
+      }
+    }
+
+    if (username) user.username = username;
+    if (email) user.email = email;
+    if (avatar) user.avatar = avatar;
+    if (role) user.role = role;
+    if (password) {
+      const hashed = await bcrypt.hash(password, 10);
+      user.password = hashed;
+    }
+
+    const updatedUser = await user.save();
+
+    res.status(200).json({
+      status: {
+        code: 200,
+        message: "User updated successfully",
+      },
+      data: {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        avatar: updatedUser.avatar,
+        role: updatedUser.role,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: {
+        code: 500,
+        message: error.message,
+      },
+    });
   }
 }
 
@@ -94,9 +165,20 @@ async function deleteUser(req, res) {
   try {
     const { id } = req.params;
     const user = await User.findByIdAndDelete(id);
-    res.json(user);
+    res.status(200).json({
+      status: {
+        code: 200,
+        message: "User deleted successfully",
+      },
+      data: user,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    res.status(500).json({
+      status: {
+        code: 500,
+        message: error.message,
+      },
+    });
   }
 }
 
@@ -118,7 +200,7 @@ async function loginUser(req, res) {
       return res.status(404).json({
         status: {
           code: 404,
-          message: "Password tidak valid",
+          message: "Invalid password",
         },
       });
     }
@@ -129,7 +211,7 @@ async function loginUser(req, res) {
         message: "Login Success",
       },
       data: {
-        _id: user._id,
+        id: user._id,
         username: user.username,
         email: user.email,
         password: user.password,
@@ -137,7 +219,12 @@ async function loginUser(req, res) {
       token,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      status: {
+        code: 500,
+        message: error.message,
+      },
+    });
   }
 }
 

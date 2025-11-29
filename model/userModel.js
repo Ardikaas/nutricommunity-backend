@@ -16,6 +16,32 @@ const rankSchema = mongoose.Schema({
 const badgeSchema = mongoose.Schema({
   badgeid: {
     type: String,
+    required: false,
+  },
+  get_on: {
+    type: Date,
+    required: false,
+  },
+});
+
+const postSchema = mongoose.Schema({
+  postid: {
+    type: String,
+    required: false,
+  },
+  post_like: {
+    type: Number,
+    required: false,
+  },
+  posted_at: {
+    type: Date,
+    required: false,
+  },
+});
+
+const missionSchema = mongoose.Schema({
+  missionid: {
+    type: String,
     required: true,
   },
   completed_at: {
@@ -26,7 +52,7 @@ const badgeSchema = mongoose.Schema({
 
 const userSchema = mongoose.Schema(
   {
-    name: {
+    username: {
       type: String,
       required: true,
     },
@@ -46,7 +72,7 @@ const userSchema = mongoose.Schema(
     avatar: {
       type: String,
       required: false,
-      default: "defaultava.png",
+      default: "default_avatar.png",
     },
     exp: {
       type: Number,
@@ -56,6 +82,7 @@ const userSchema = mongoose.Schema(
     rank: [rankSchema],
     badge: [badgeSchema],
     mission: [missionSchema],
+    post: [postSchema],
   },
   {
     timeStamp: true,
