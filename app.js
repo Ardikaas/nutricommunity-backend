@@ -1,19 +1,61 @@
-const express = require("express");
-const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const UserController = require("./controller/userController");
+const express = require("express");
+const fs = require("fs");
+const mongoose = require("mongoose");
+const multer = require("multer");
+const path = require("path");
 require("dotenv").config();
+
+const ArticleController = require("./controller/articleController");
 const QuestController = require("./controller/questController");
+const UserController = require("./controller/userController");
 const protect = require("./middleware/auth");
 
 const app = express();
 const port = process.env.PORT;
 const db = process.env.MONGODB_URI;
 
+function imageFallback(basePath, defaultFile) {
+  return (req, res, next) => {
+    const filePath = path.join(basePath, req.path);
+    if (fs.existsSync(filePath)) {
+      return next();
+    }
+    res.sendFile(path.join(basePath, defaultFile));
+  };
+}
+
+app.use(
+  "/images/avatars",
+  imageFallback(path.join(__dirname, "images/avatars"), "default_avatar.png"),
+  express.static(path.join(__dirname, "images/avatars"))
+);
+app.use(
+  "/images/posts",
+  imageFallback(path.join(__dirname, "images/posts"), "default_post.jpg"),
+  express.static(path.join(__dirname, "images/posts"))
+);
+app.use(
+  "/images/articles",
+  imageFallback(path.join(__dirname, "images/articles"), "image.jpg"),
+  express.static(path.join(__dirname, "images/articles"))
+);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
+
+const articleStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "images/articles");
+  },
+  filename: function (req, file, cb) {
+    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, unique + path.extname(file.originalname));
+  },
+});
+
+const uploadArticle = multer({ storage: articleStorage });
 
 mongoose
   .connect(db)
@@ -62,6 +104,26 @@ app.put("/quest/:id", (req, res) => {
 
 app.delete("/quest/:id", (req, res) => {
   QuestController.deleteQuest(req, res);
+});
+
+app.get("/article", (req, res) => {
+  ArticleController.getArticles(req, res);
+});
+
+app.get("/article/:id", (req, res) => {
+  ArticleController.getArticleById(req, res);
+});
+
+app.post("/article", uploadArticle.single("image"), (req, res) => {
+  ArticleController.createArticle(req, res);
+});
+
+app.put("/article/:id", uploadArticle.single("image"), (req, res) => {
+  ArticleController.updateArticle(req, res);
+});
+
+app.delete("/article/:id", (req, res) => {
+  ArticleController.deleteArticle(req, res);
 });
 
 app.listen(port, () => {
