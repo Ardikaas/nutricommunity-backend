@@ -83,9 +83,9 @@ async function createUser(req, res) {
 
     const user = await newUser.save();
 
-    res.status(200).json({
+    res.status(201).json({
       status: {
-        code: 200,
+        code: 201,
         message: "User created successfully",
       },
       data: user,

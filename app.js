@@ -4,6 +4,8 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const UserController = require("./controller/userController");
 require("dotenv").config();
+const QuestController = require("./controller/questController");
+const protect = require("./middleware/auth");
 
 const app = express();
 const port = process.env.PORT;
@@ -40,6 +42,26 @@ app.post("/user/login", async (req, res) => {
 
 app.get("/user/logout", async (req, res) => {
   UserController.logoutUser(req, res);
+});
+
+app.get("/quest", (req, res) => {
+  QuestController.getAllQuests(req, res);
+});
+
+app.get("/quest/:id", (req, res) => {
+  QuestController.getQuestById(req, res);
+});
+
+app.post("/quest", (req, res) => {
+  QuestController.createQuest(req, res);
+});
+
+app.put("/quest/:id", (req, res) => {
+  QuestController.updateQuest(req, res);
+});
+
+app.delete("/quest/:id", (req, res) => {
+  QuestController.deleteQuest(req, res);
 });
 
 app.listen(port, () => {

@@ -39,7 +39,7 @@ const postSchema = mongoose.Schema({
   },
 });
 
-const missionSchema = mongoose.Schema({
+const questSchema = mongoose.Schema({
   missionid: {
     type: String,
     required: true,
@@ -81,7 +81,7 @@ const userSchema = mongoose.Schema(
     },
     rank: [rankSchema],
     badge: [badgeSchema],
-    mission: [missionSchema],
+    quest: [questSchema],
     post: [postSchema],
   },
   {
