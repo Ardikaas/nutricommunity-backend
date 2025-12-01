@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 
 const articleSchema = mongoose.Schema({
+  title: {
+    type: String,
+    required: true,
+  },
   first: {
     type: String,
     required: true,

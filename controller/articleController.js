@@ -12,10 +12,11 @@ const ArticleController = {
 
 async function createArticle(req, res) {
   try {
-    const { first, second, third } = req.body;
+    const { title, first, second, third } = req.body;
     let image = "image.jpg";
 
     const newArticle = new Article({
+      title,
       first,
       second,
       third,
@@ -117,6 +118,7 @@ async function updateArticle(req, res) {
       });
     }
 
+    existing.title = req.body.title ?? existing.title;
     existing.first = req.body.first ?? existing.first;
     existing.second = req.body.second ?? existing.second;
     existing.third = req.body.third ?? existing.third;

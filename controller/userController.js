@@ -14,6 +14,7 @@ const UserController = {
   deleteUser,
   loginUser,
   logoutUser,
+  userProfile,
 };
 
 async function getAllUsers(req, res) {
@@ -238,6 +239,47 @@ async function logoutUser(req, res) {
       message: "Logout Success",
     },
   });
+}
+
+async function userProfile(req, res) {
+  try {
+    const user = await User.findById(req.user._id).select("-password");
+    if (!user) {
+      return res.status(404).json({
+        status: { code: 404, message: "User not found" },
+      });
+    }
+
+    const level = Math.floor(Math.sqrt(user.exp / 100)) + 1;
+    const expCurrentLevel = Math.pow(level - 1, 2) * 100;
+    const expNextLevel = Math.pow(level, 2) * 100;
+    const expToNext = expNextLevel - user.exp;
+
+    const progress = Math.floor(
+      ((user.exp - expCurrentLevel) / (expNextLevel - expCurrentLevel)) * 10
+    );
+    const totalBadge = user.badge.length;
+    const totalQuest = user.quest.length;
+    const streak = user.streak ? user.streak.current_streak : 0;
+
+    res.status(200).json({
+      status: { code: 200, message: "Profile fetched successfully" },
+      data: {
+        username: user.username,
+        level,
+        exp: user.exp,
+        expToNext,
+        progress,
+        streak,
+        totalBadge,
+        totalQuest,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: { code: 500, message: error.message },
+    });
+  }
 }
 
 module.exports = UserController;

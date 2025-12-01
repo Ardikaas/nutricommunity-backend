@@ -50,6 +50,17 @@ const questSchema = mongoose.Schema({
   },
 });
 
+const streakSchema = mongoose.Schema({
+  last_completed: {
+    type: Date,
+    required: false,
+  },
+  current_streak: {
+    type: Number,
+    default: 0,
+  },
+});
+
 const userSchema = mongoose.Schema(
   {
     username: {
@@ -79,6 +90,7 @@ const userSchema = mongoose.Schema(
       required: true,
       default: 0,
     },
+    streak: streakSchema,
     rank: [rankSchema],
     badge: [badgeSchema],
     quest: [questSchema],

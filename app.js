@@ -10,6 +10,7 @@ require("dotenv").config();
 const ArticleController = require("./controller/articleController");
 const QuestController = require("./controller/questController");
 const UserController = require("./controller/userController");
+const PostController = require("./controller/postController");
 const protect = require("./middleware/auth");
 
 const app = express();
@@ -55,7 +56,18 @@ const articleStorage = multer.diskStorage({
   },
 });
 
+const postStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "images/posts");
+  },
+  filename: function (req, file, cb) {
+    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, unique + path.extname(file.originalname));
+  },
+});
+
 const uploadArticle = multer({ storage: articleStorage });
+const uploadPost = multer({ storage: postStorage });
 
 mongoose
   .connect(db)
@@ -124,6 +136,39 @@ app.put("/article/:id", uploadArticle.single("image"), (req, res) => {
 
 app.delete("/article/:id", (req, res) => {
   ArticleController.deleteArticle(req, res);
+});
+
+app.get("/user_profile", protect, async (req, res) => {
+  UserController.userProfile(req, res);
+});
+
+app.get("/post", (req, res) => {
+  PostController.getAllPosts(req, res);
+});
+
+app.get("/post/:id", protect, (req, res) => {
+  PostController.getPostById(req, res);
+});
+
+app.post("/post", protect, uploadPost.single("image"), (req, res) => {
+  PostController.createPost(req, res);
+});
+
+app.put("/post/:id", protect, uploadPost.single("image"), (req, res) => {
+  PostController.updatePost(req, res);
+});
+
+app.delete("/post/:id", (req, res) => {
+  PostController.deletePost(req, res);
+});
+
+// LIKE & COMMENT
+app.put("/post/:id/like", protect, (req, res) => {
+  PostController.likePost(req, res);
+});
+
+app.post("/post/:id/comment", protect, (req, res) => {
+  PostController.addComment(req, res);
 });
 
 app.listen(port, () => {
