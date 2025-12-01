@@ -15,6 +15,8 @@ const UserController = {
   loginUser,
   logoutUser,
   userProfile,
+  getUserRank,
+  getUserRankById,
 };
 
 async function getAllUsers(req, res) {
@@ -274,6 +276,65 @@ async function userProfile(req, res) {
         totalBadge,
         totalQuest,
       },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: { code: 500, message: error.message },
+    });
+  }
+}
+
+async function getUserRank(req, res) {
+  try {
+    const users = await User.find().select("username exp avatar");
+
+    const rankedUsers = users
+      .sort((a, b) => b.exp - a.exp)
+      .map((user, index) => ({
+        rank: index + 1,
+        username: user.username,
+        exp: user.exp,
+        avatar: user.avatar,
+      }));
+
+    res.status(200).json({
+      status: { code: 200, message: "User ranking fetched successfully" },
+      data: rankedUsers,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: { code: 500, message: error.message },
+    });
+  }
+}
+
+async function getUserRankById(req, res) {
+  try {
+    const { id } = req.params;
+
+    const users = await User.find()
+      .select("username exp avatar")
+      .sort({ exp: -1 });
+
+    const ranked = users.map((u, index) => ({
+      id: u._id,
+      username: u.username,
+      exp: u.exp,
+      avatar: u.avatar,
+      rank: index + 1,
+    }));
+
+    const userRank = ranked.find((u) => u.id.toString() === id);
+
+    if (!userRank) {
+      return res.status(404).json({
+        status: { code: 404, message: "User not found" },
+      });
+    }
+
+    res.status(200).json({
+      status: { code: 200, message: "User rank fetched successfully" },
+      data: userRank,
     });
   } catch (error) {
     res.status(500).json({

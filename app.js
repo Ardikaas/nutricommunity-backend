@@ -98,6 +98,14 @@ app.get("/user/logout", async (req, res) => {
   UserController.logoutUser(req, res);
 });
 
+app.get("/user_rank", async (req, res) => {
+  UserController.getUserRank(req, res);
+});
+
+app.get("/user_rank/:id", async (req, res) => {
+  UserController.getUserRankById(req, res);
+});
+
 app.get("/quest", (req, res) => {
   QuestController.getAllQuests(req, res);
 });
@@ -162,7 +170,6 @@ app.delete("/post/:id", (req, res) => {
   PostController.deletePost(req, res);
 });
 
-// LIKE & COMMENT
 app.put("/post/:id/like", protect, (req, res) => {
   PostController.likePost(req, res);
 });
