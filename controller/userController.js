@@ -321,7 +321,7 @@ async function getUserRank(req, res) {
 
 async function getUserRankById(req, res) {
   try {
-    const { id } = req.params;
+    const userId = req.user._id;
 
     const users = await User.find()
       .select("username exp avatar")
@@ -335,7 +335,7 @@ async function getUserRankById(req, res) {
       rank: index + 1,
     }));
 
-    const userRank = ranked.find((u) => u.id.toString() === id);
+    const userRank = ranked.find((u) => u.id.toString() === userId.toString());
 
     if (!userRank) {
       return res.status(404).json({

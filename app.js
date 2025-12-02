@@ -102,7 +102,7 @@ app.get("/user_rank", async (req, res) => {
   UserController.getUserRank(req, res);
 });
 
-app.get("/user_rank/:id", async (req, res) => {
+app.get("/rank_me", protect, async (req, res) => {
   UserController.getUserRankById(req, res);
 });
 

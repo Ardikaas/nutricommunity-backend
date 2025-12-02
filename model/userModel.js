@@ -40,7 +40,7 @@ const postSchema = mongoose.Schema({
 });
 
 const questSchema = mongoose.Schema({
-  missionid: {
+  quest_id: {
     type: String,
     required: true,
   },
