@@ -106,6 +106,18 @@ app.get("/user_rank/:id", async (req, res) => {
   UserController.getUserRankById(req, res);
 });
 
+app.get("/user_profile", protect, async (req, res) => {
+  UserController.userProfile(req, res);
+});
+
+app.post("/quest/complete", protect, (req, res) => {
+  UserController.addQuestCompletion(req, res);
+});
+
+app.get("/quest/me", protect, (req, res) => {
+  UserController.getUserCompletedQuest(req, res);
+});
+
 app.get("/quest", (req, res) => {
   QuestController.getAllQuests(req, res);
 });
@@ -144,10 +156,6 @@ app.put("/article/:id", uploadArticle.single("image"), (req, res) => {
 
 app.delete("/article/:id", (req, res) => {
   ArticleController.deleteArticle(req, res);
-});
-
-app.get("/user_profile", protect, async (req, res) => {
-  UserController.userProfile(req, res);
 });
 
 app.get("/post", (req, res) => {

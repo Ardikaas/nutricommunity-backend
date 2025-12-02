@@ -17,6 +17,8 @@ const UserController = {
   userProfile,
   getUserRank,
   getUserRankById,
+  addQuestCompletion,
+  getUserCompletedQuest,
 };
 
 async function getAllUsers(req, res) {
@@ -279,7 +281,10 @@ async function userProfile(req, res) {
     });
   } catch (error) {
     res.status(500).json({
-      status: { code: 500, message: error.message },
+      status: {
+        code: 500,
+        message: error.message,
+      },
     });
   }
 }
@@ -298,12 +303,18 @@ async function getUserRank(req, res) {
       }));
 
     res.status(200).json({
-      status: { code: 200, message: "User ranking fetched successfully" },
+      status: {
+        code: 200,
+        message: "User ranking fetched successfully",
+      },
       data: rankedUsers,
     });
   } catch (error) {
     res.status(500).json({
-      status: { code: 500, message: error.message },
+      status: {
+        code: 500,
+        message: error.message,
+      },
     });
   }
 }
@@ -328,17 +339,110 @@ async function getUserRankById(req, res) {
 
     if (!userRank) {
       return res.status(404).json({
-        status: { code: 404, message: "User not found" },
+        status: {
+          code: 404,
+          message: "User not found",
+        },
       });
     }
 
     res.status(200).json({
-      status: { code: 200, message: "User rank fetched successfully" },
+      status: {
+        code: 200,
+        message: "User rank fetched successfully",
+      },
       data: userRank,
     });
   } catch (error) {
     res.status(500).json({
-      status: { code: 500, message: error.message },
+      status: {
+        code: 500,
+        message: error.message,
+      },
+    });
+  }
+}
+
+async function addQuestCompletion(req, res) {
+  try {
+    const userId = req.user._id;
+    const { quest_id, exp_earned, completed_at } = req.body;
+
+    if (!quest_id || !exp_earned || !completed_at) {
+      return res.status(400).json({
+        status: {
+          code: 400,
+          message: "All fields are required",
+        },
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: {
+          code: 404,
+          message: "User not found",
+        },
+      });
+    }
+
+    user.quest.push({
+      quest_id,
+      exp_earned,
+      completed_at,
+    });
+
+    user.exp += exp_earned;
+
+    await user.save();
+
+    res.status(201).json({
+      status: { code: 201, message: "Quest completed successfully" },
+      data: {
+        quest_id,
+        exp_earned,
+        completed_at,
+        total_exp: user.exp,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: {
+        code: 500,
+        message: error.message,
+      },
+    });
+  }
+}
+
+async function getUserCompletedQuest(req, res) {
+  try {
+    const userId = req.user._id;
+
+    const user = await User.findById(userId).select("quest username");
+    if (!user) {
+      return res.status(404).json({
+        status: {
+          code: 404,
+          message: "User not found",
+        },
+      });
+    }
+
+    res.status(200).json({
+      status: {
+        code: 200,
+        message: "Completed quest fetched successfully",
+      },
+      data: user.quest,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: {
+        code: 500,
+        message: error.message,
+      },
     });
   }
 }

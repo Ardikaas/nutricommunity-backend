@@ -44,6 +44,10 @@ const questSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  exp_earned: {
+    type: Number,
+    required: true,
+  },
   completed_at: {
     type: Date,
     required: true,
